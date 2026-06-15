@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Tarefas - SGGE</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <!-- Tela de acesso (senha) -->
+  <div id="password-screen" class="password-screen">
+    <div class="password-card">
+      <img src="assets/gge-logo.png" alt="Logo GGE" class="password-logo">
+      <h1 class="password-title">Acesso restrito</h1>
+      <form id="password-form" class="password-form">
+        <input type="password" id="password-input" class="password-input" placeholder="Digite a senha" autocomplete="off">
+        <button type="submit" class="password-button">Entrar</button>
+      </form>
+      <p id="password-error" class="password-error">Senha incorreta. Tente novamente.</p>
+      <span class="password-credit">Desenvolvido por Lucas Diego</span>
+    </div>
+  </div>
+
+  <!-- Splash screen inicial -->
+  <div id="splash-screen" class="splash-screen">
+    <div class="splash-glow" aria-hidden="true"></div>
+    <div class="splash-card">
+      <p class="splash-welcome">Bem-vindo</p>
+      <div class="splash-logo-wrap">
+        <img src="assets/gge-logo.png" alt="Logo GGE" class="splash-logo">
+      </div>
+      <p class="splash-text">Carregando dados...</p>
+      <div class="splash-progress">
+        <div class="splash-progress-bar"></div>
+      </div>
+    </div>
+    <span class="splash-credit">Desenvolvido por Lucas Diego</span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/gge-logo.png" alt="Logo GGE" class="brand-logo">
+      <span class="brand-title">Lista de Tarefas</span>
+    </div>
+
+    <!-- Filtros -->
+    <section class="topbar-filters">
+      <div class="filter-group">
+        <select id="filter-colecao" aria-label="Coleção"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-modulo" aria-label="Módulo"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-frente" aria-label="Frente"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-ano" aria-label="Ano"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-escola" aria-label="Escola"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-status" aria-label="Status"></select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-situacao" aria-label="Situação da tarefa">
+          <option value="" disabled hidden selected>Situação da tarefa</option>
+          <option value="">Todas</option>
+          <option value="pendentes">Pendentes</option>
+          <option value="resolvidas">Resolvidas</option>
+        </select>
+      </div>
+      <div class="filter-group filter-actions">
+        <button id="btn-clear-filters" type="button">Limpar filtros</button>
+      </div>
+    </section>
+  </header>
+
+  <main class="container">
+
+    <!-- Mensagens de status (erro / aviso) -->
+    <div id="status-message" class="status-message" style="display:none;"></div>
+    <div id="loading-indicator" class="loading-indicator" style="display:none;">
+      <span>Carregando dados...</span>
+    </div>
+
+    <!-- Cards -->
+    <section class="cards-grid">
+      <div class="card card-blue">
+        <div class="card-label">Total de Erros Reportados</div>
+        <div class="card-value" id="card-total-erros">-</div>
+      </div>
+      <div class="card card-red">
+        <div class="card-label">Tarefas Pendentes</div>
+        <div class="card-value" id="card-pendentes">-</div>
+      </div>
+      <div class="card card-blue">
+        <div class="card-label">Tempo Médio de Resolução</div>
+        <div class="card-value" id="card-tempo-medio">-</div>
+      </div>
+      <div class="card card-green">
+        <div class="card-label">Tarefas Resolvidas</div>
+        <div class="card-value" id="card-resolvidas">-</div>
+      </div>
+    </section>
+
+    <!-- Gráficos -->
+    <section class="charts-grid">
+      <div class="chart-card origem-chart-card">
+        <h2>Origem dos Erros</h2>
+        <div class="chart-wrapper">
+          <canvas id="chart-origem"></canvas>
+        </div>
+      </div>
+      <div class="chart-card modulo-chart-card">
+        <h2>Erro por Módulo</h2>
+        <div id="chart-modulo" class="echarts-modulo"></div>
+      </div>
+      <div class="chart-card chart-card-fixed">
+        <h2>Quantidade de Erros por Frente</h2>
+        <div class="chart-scroll-container">
+          <div id="chart-frente-inner" class="chart-frente-inner">
+            <canvas id="chart-frente"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card chart-card-fixed category-ranking-card">
+        <div class="chart-header">
+          <h2>Erros por Categoria e Subcategoria</h2>
+          <p>Distribuição dos chamados por tipo de erro</p>
+        </div>
+        <div id="category-ranking" class="category-ranking"></div>
+      </div>
+    </section>
+
+    <!-- Erros por Coleção / Escolas por Volume de Solicitações -->
+    <section class="secondary-grid">
+      <div class="chart-card colecao-chart-card">
+        <div class="chart-header">
+          <h2>ERROS POR COLEÇÃO</h2>
+          <p>Quantidade de erros registrados por coleção.</p>
+        </div>
+        <div class="colecao-total-card">
+          <div class="colecao-total-label">TOTAL GERAL DE ERROS</div>
+          <div class="colecao-total-value" id="colecao-total-erros">-</div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="chart-colecao"></canvas>
+        </div>
+      </div>
+      <div class="chart-card school-ranking-card">
+        <div class="chart-header">
+          <h2>Escolas por Volume de Solicitações</h2>
+          <p>Total de chamados registrados por escola</p>
+        </div>
+        <div id="school-ranking" class="school-ranking"></div>
+      </div>
+    </section>
+
+    <!-- Tabela detalhada -->
+    <section class="table-section">
+      <div class="table-header">
+        <h2>Pendências Detalhadas</h2>
+        <span id="table-count" class="table-count">0 registros</span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Escola</th>
+              <th>Coleção</th>
+              <th>Módulo</th>
+              <th>Ano</th>
+              <th>Frente</th>
+              <th>Categoria</th>
+              <th>Prioridade</th>
+              <th>Tempo de Resolução</th>
+              <th>Status</th>
+              <th>Descrição do Problema</th>
+              <th>Imagem/Evidência</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="utils.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
