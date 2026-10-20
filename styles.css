@@ -1368,9 +1368,8 @@ body {
   }
 
   .report-actions {
-    position: absolute;
-    top: 0;
-    right: 0;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .report-body {
@@ -1965,4 +1964,368 @@ tbody tr:hover {
 .badge-default {
   background-color: #eeeeee;
   color: var(--text-muted);
+}
+
+/* ====================================================================== */
+/* Responsividade mobile (fica no fim do arquivo para prevalecer sobre as  */
+/* regras base; o desktop acima de 900px não é afetado)                    */
+/* ====================================================================== */
+
+/* Tablet/desktop estreito: cards ficam estreitos e o RELATÓRIO cobria o título */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .card-wrap .card-action {
+    padding-top: 42px;
+  }
+
+  .card-wrap .card-action[aria-pressed="true"] {
+    padding-top: 41px;
+  }
+}
+
+/* A regra base de .secondary-grid vem depois do @media (max-width: 900px)
+   original e o anulava; reaplica a coluna única aqui. */
+@media (max-width: 900px) {
+  .secondary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Cabeçalho: marca em uma linha; filtros em grade de 2 colunas */
+  .topbar {
+    position: static;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .brand {
+    width: 100%;
+  }
+
+  .brand-logo {
+    height: 30px;
+  }
+
+  .brand-title {
+    font-size: 17px;
+  }
+
+  .topbar-filters {
+    flex: none;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .filter-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filter-group select,
+  #btn-clear-filters {
+    width: 100%;
+    max-width: none;
+    height: 42px;
+    font-size: 14px;
+    padding: 0 10px;
+  }
+
+  #btn-clear-filters {
+    color: var(--blue);
+    background-color: #f6f8fb;
+  }
+
+  .container {
+    padding: 12px 12px 32px;
+  }
+
+  /* Cards: 2 colunas, conteúdo sem aperto */
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .card-action[aria-pressed="true"] {
+    padding: 13px;
+  }
+
+  .card-label {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-size: 28px;
+  }
+
+  .card-hint {
+    font-size: 12px;
+  }
+
+  /* "✓ Selecionado" vai para baixo, longe do título */
+  .card-action[aria-pressed="true"]::after {
+    top: auto;
+    bottom: 10px;
+    right: 10px;
+  }
+
+  /* RELATÓRIO numa faixa própria no topo do card de pendentes */
+  .card-wrap .card-action {
+    padding-top: 46px;
+  }
+
+  .card-wrap .card-action[aria-pressed="true"] {
+    padding-top: 45px;
+  }
+
+  .card-report-btn {
+    top: 10px;
+    left: 14px;
+    right: 14px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  /* Gráficos e blocos em coluna única, largura total */
+  .charts-grid,
+  .secondary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  /* Cards e containers de gráfico nunca mais largos que a tela */
+  .chart-card,
+  .chart-wrapper,
+  .chart-scroll-container,
+  .chart-frente-inner,
+  .echarts-modulo {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .chart-card {
+    padding: 14px;
+    overflow-x: hidden;
+  }
+
+  .chart-card h2,
+  .chart-header h2 {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .chart-header p {
+    font-size: 12.5px;
+  }
+
+  .chart-header h2 {
+    margin-bottom: 2px;
+  }
+
+  /* Frente: altura visível controlada; categorias extras rolam só na vertical */
+  .chart-card-fixed {
+    height: 460px;
+  }
+
+  .chart-scroll-container {
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .chart-scroll-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chart-scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+  }
+
+  /* Rosca: altura definida pelo JS conforme o modo (inclui a legenda) */
+  .echarts-modulo {
+    flex: none;
+    min-height: 0;
+  }
+
+  .colecao-chart-card,
+  .school-ranking-card {
+    height: auto;
+  }
+
+  .colecao-chart-card .chart-wrapper {
+    flex: none;
+    height: 240px;
+  }
+
+  .school-ranking {
+    max-height: 340px;
+  }
+
+  .school-info {
+    flex-basis: 52%;
+  }
+
+  .school-name {
+    font-size: 12.5px;
+  }
+
+  /* Categoria/subcategoria: textos completos (quebram linha em vez de cortar) */
+  .category-ranking-card.chart-card-fixed {
+    height: auto;
+    max-height: 520px;
+  }
+
+  .category-name,
+  .sub-name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+
+  .sub-name {
+    flex-basis: 36%;
+    font-size: 12.5px;
+  }
+
+  .sub-value {
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  /* Tabela principal: rolagem horizontal com a coluna Escola fixa */
+  .table-section {
+    padding: 14px 12px;
+  }
+
+  .table-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .table-wrapper {
+    max-height: 70vh;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  tbody tr {
+    background-color: #ffffff;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+  }
+
+  tbody td:first-child,
+  thead th:first-child {
+    position: sticky;
+    left: 0;
+    background-color: inherit;
+    box-shadow: 1px 0 0 var(--border);
+  }
+
+  thead th:first-child {
+    z-index: 3;
+    background-color: #f7f8fa;
+  }
+
+  tbody td:first-child {
+    z-index: 1;
+  }
+
+  tbody td:first-child,
+  thead th:first-child {
+    min-width: 150px;
+    width: 150px;
+  }
+
+  .table-school-name {
+    max-width: 108px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 12px;
+  }
+
+  .table-school-logo {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+  }
+
+  .cell-descricao {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+  }
+
+  /* Modais ocupam quase toda a tela; cabeçalho e rodapé não encolhem, só o corpo rola */
+  .modal,
+  .modal-wide {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .report-hero,
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+  }
+
+  .report-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-analysis {
+    grid-column: 1 / -1;
+  }
+
+  .report-table .col-desc {
+    min-width: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-value {
+    font-size: 30px;
+  }
+
+  .report-hero h2 {
+    font-size: 17px;
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .report-kpi:first-child {
+    grid-column: auto;
+  }
+
+  .report-filters select,
+  .report-filters input,
+  .report-filters .report-btn-secondary {
+    flex: 1 1 100%;
+  }
 }

@@ -7,9 +7,47 @@ let chartFrente = null;
 let chartColecao = null;
 let chartModulo = null; // instância ECharts (pizza/rosca "Erro por Módulo")
 
+/* Breakpoints dos gráficos (iguais aos do CSS) — fonte única para todos os gráficos */
+const CHART_BREAKPOINTS = { mobile: "(max-width: 768px)", narrow: "(max-width: 480px)" };
+
+/** "desktop" (> 768px), "mobile" (≤ 768px) ou "narrow" (≤ 480px). */
+function getChartLayoutMode() {
+  if (typeof window.matchMedia !== "function") return "desktop";
+  if (window.matchMedia(CHART_BREAKPOINTS.narrow).matches) return "narrow";
+  if (window.matchMedia(CHART_BREAKPOINTS.mobile).matches) return "mobile";
+  return "desktop";
+}
+
+function isMobileLayout() {
+  return getChartLayoutMode() !== "desktop";
+}
+
+/** Quebra um rótulo em até `maxLines` linhas de ~`maxChars` (sem cortar palavras quando possível). */
+function wrapChartLabel(label, maxChars, maxLines) {
+  const words = String(label).split(/\s+/);
+  const lines = [];
+  let current = "";
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxChars && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+  if (current) lines.push(current);
+  if (lines.length <= maxLines) return lines;
+  const kept = lines.slice(0, maxLines);
+  kept[maxLines - 1] = `${kept[maxLines - 1]} ${lines.slice(maxLines).join(" ")}`;
+  return kept;
+}
+
 /**
  * Plugin Chart.js: desenha a quantidade ao final/topo de cada barra
- * (horizontal ou vertical, de acordo com `indexAxis`).
+ * (horizontal ou vertical, de acordo com `indexAxis`). Nas horizontais, se
+ * o número não couber após a barra, ele é desenhado dentro dela (em branco),
+ * para nunca ficar cortado na borda do gráfico.
  */
 const barValueLabelPlugin = {
   id: "barValueLabels",
@@ -26,9 +64,19 @@ const barValueLabelPlugin = {
         ctx.fillStyle = "#1f2430";
         ctx.font = "600 11px 'Segoe UI', sans-serif";
         if (isHorizontal) {
-          ctx.textAlign = "left";
+          const text = String(value);
+          const textW = ctx.measureText(text).width;
+          const fitsOutside = bar.x + 6 + textW <= chart.width - 2;
+          const barW = bar.x - bar.base;
           ctx.textBaseline = "middle";
-          ctx.fillText(String(value), bar.x + 6, bar.y);
+          if (fitsOutside || barW < textW + 10) {
+            ctx.textAlign = "left";
+            ctx.fillText(text, Math.min(bar.x + 6, chart.width - textW - 2), bar.y);
+          } else {
+            ctx.textAlign = "right";
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(text, bar.x - 5, bar.y);
+          }
         } else {
           ctx.textAlign = "center";
           ctx.textBaseline = "bottom";
@@ -67,7 +115,21 @@ function initCharts() {
   const elModulo = document.getElementById("chart-modulo");
   if (elModulo && window.echarts) {
     chartModulo = echarts.init(elModulo);
-    window.addEventListener("resize", () => chartModulo.resize());
+    // Acompanha a largura real do card (layout, splash, rotação), não só da janela
+    if (typeof ResizeObserver === "function") {
+      new ResizeObserver(() => chartModulo.resize()).observe(elModulo);
+    } else {
+      window.addEventListener("resize", () => chartModulo.resize());
+    }
+  }
+
+  // Ao cruzar um breakpoint, redesenha os gráficos com a configuração do novo modo
+  if (typeof window.matchMedia === "function") {
+    Object.values(CHART_BREAKPOINTS).forEach((query) => {
+      window.matchMedia(query).addEventListener("change", () => {
+        if (typeof applyFilters === "function") applyFilters();
+      });
+    });
   }
 
   // Sem Chart.js (ex.: falha no CDN), os gráficos de barras ficam vazios,
@@ -100,7 +162,7 @@ function initCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: {
-        padding: { right: 28 }
+        padding: () => ({ right: isMobileLayout() ? 10 : 28 })
       },
       plugins: {
         legend: { display: false },
@@ -141,7 +203,7 @@ function initCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: {
-        padding: { left: 8, right: 36 }
+        padding: () => (isMobileLayout() ? { left: 0, right: 8 } : { left: 8, right: 36 })
       },
       plugins: {
         legend: { display: false },
@@ -158,14 +220,17 @@ function initCharts() {
           grace: "12%"
         },
         y: {
+          // Desktop: eixo fixo de 130px. Mobile: proporcional ao card, sem estourar a largura.
           afterFit: (scale) => {
-            scale.width = 130;
+            scale.width = isMobileLayout() ? Math.min(130, Math.round(scale.chart.width * 0.42)) : 130;
           },
           ticks: {
             autoSkip: false,
-            font: { size: 9 },
+            font: () => ({ size: isMobileLayout() ? 10.5 : 9 }),
             callback: function (value) {
               const label = this.getLabelForValue(value);
+              // Mobile: até 2 linhas, sem cortar (nome completo também no tooltip)
+              if (isMobileLayout()) return wrapChartLabel(label, 17, 2);
               return label.length > 24 ? label.slice(0, 24) + "…" : label;
             }
           }
@@ -250,6 +315,10 @@ function updateChartOrigem(validRows) {
   );
   grouped.sort((a, b) => b.value - a.value);
 
+  // Mobile: altura proporcional ao número de categorias (desktop mantém o CSS)
+  const wrapper = chartOrigem.canvas.parentElement;
+  wrapper.style.height = isMobileLayout() ? `${Math.max(220, grouped.length * 34 + 50)}px` : "";
+
   chartOrigem.data.labels = grouped.map((g) => g.label);
   chartOrigem.data.datasets[0].data = grouped.map((g) => g.value);
   chartOrigem.data.datasets[0].backgroundColor = grouped.map((g, i) =>
@@ -273,6 +342,12 @@ function updateChartModulo(validRows) {
   grouped.sort((a, b) => b.value - a.value);
 
   const total = grouped.reduce((sum, g) => sum + g.value, 0);
+  const percentOf = (value) => (total > 0 ? ((value / total) * 100).toFixed(1).replace(".", ",") : "0,0");
+  const valueByName = new Map(grouped.map((g) => [g.label, g.value]));
+  const layout = getModuloChartLayout(getChartLayoutMode(), grouped.length, percentOf, valueByName);
+
+  // Altura do container por modo (desktop mantém a do CSS) antes de redimensionar
+  chartModulo.getDom().style.height = layout.height ? `${layout.height}px` : "";
 
   const data = grouped.map((g, i) => ({
     name: g.label,
@@ -280,46 +355,37 @@ function updateChartModulo(validRows) {
     itemStyle: { color: COLORS.palette[i % COLORS.palette.length] }
   }));
 
+  // notMerge: troca completa de configuração ao mudar de modo (desktop/mobile/estreito)
   chartModulo.setOption({
     color: COLORS.palette,
     tooltip: {
       trigger: "item",
-      formatter: (params) => {
-        const percent = total > 0 ? ((params.value / total) * 100).toFixed(1).replace(".", ",") : "0,0";
-        return `${params.name}<br/>${params.value} (${percent}%)`;
-      }
+      confine: true,
+      formatter: (params) => `${params.name}<br/>${params.value} (${percentOf(params.value)}%)`
     },
     legend: {
-      bottom: 0,
       left: "center",
-      type: "scroll",
       icon: "circle",
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { fontSize: 11, color: "#1f2430" },
-      formatter: (name) => name
+      textStyle: { fontSize: layout.legendFontSize, color: "#1f2430" },
+      ...layout.legend
     },
     series: [
       {
         name: "Erro por Módulo",
         type: "pie",
-        radius: ["38%", "65%"],
-        center: ["50%", "42%"],
+        radius: layout.radius,
+        center: layout.center,
         avoidLabelOverlap: true,
         label: {
-          show: true,
-          formatter: (params) => {
-            const percent = total > 0 ? ((params.value / total) * 100).toFixed(1).replace(".", ",") : "0,0";
-            return `${params.value} (${percent}%)`;
-          },
-          fontSize: 11,
           fontWeight: 600,
-          color: "#1f2430"
+          color: "#1f2430",
+          ...layout.label
         },
         labelLine: {
-          length: 12,
-          length2: 10,
-          smooth: true
+          smooth: true,
+          ...layout.labelLine
         },
         itemStyle: {
           borderColor: "#ffffff",
@@ -338,9 +404,72 @@ function updateChartModulo(validRows) {
         data
       }
     ]
-  });
+  }, true);
 
   chartModulo.resize();
+}
+
+/**
+ * Configuração da rosca "Erro por Módulo" por modo de layout.
+ * - desktop: configuração original (rótulos externos "49 (44,1%)", legenda com rolagem).
+ * - mobile:  raio menor, rótulos externos em 2 linhas, legenda que quebra linhas.
+ * - narrow:  rosca no topo (centro em px), % dentro das fatias maiores e legenda
+ *            completa abaixo com nome, quantidade e % de todos os módulos.
+ */
+function getModuloChartLayout(mode, itemCount, percentOf, valueByName) {
+  if (mode === "narrow") {
+    const pieArea = 220;
+    const legendRows = Math.ceil(itemCount / 2);
+    return {
+      height: pieArea + 16 + legendRows * 24,
+      // Raios em px, proporcionais à área da rosca (raio externo = 45% da altura)
+      radius: [`${Math.round(pieArea * 0.25)}px`, `${Math.round(pieArea * 0.45)}px`],
+      center: ["50%", `${pieArea / 2}px`],
+      legendFontSize: 12,
+      legend: {
+        type: "plain",
+        top: pieArea + 8,
+        width: "96%",
+        itemGap: 12,
+        formatter: (name) => `${name}  ${valueByName.get(name)} (${percentOf(valueByName.get(name))}%)`
+      },
+      label: {
+        position: "inside",
+        fontSize: 11,
+        color: "#ffffff",
+        formatter: (params) => (params.percent >= 8 ? `${Math.round(params.percent)}%` : "")
+      },
+      labelLine: { show: false }
+    };
+  }
+  if (mode === "mobile") {
+    return {
+      height: 340 + Math.max(0, Math.ceil(itemCount / 4) - 1) * 22,
+      radius: ["30%", "50%"],
+      center: ["50%", "42%"],
+      legendFontSize: 12,
+      legend: { type: "plain", bottom: 0, width: "94%" },
+      label: {
+        show: true,
+        fontSize: 11,
+        formatter: (params) => `${params.value}\n${percentOf(params.value)}%`
+      },
+      labelLine: { length: 8, length2: 6 }
+    };
+  }
+  return {
+    height: null,
+    radius: ["38%", "65%"],
+    center: ["50%", "42%"],
+    legendFontSize: 11,
+    legend: { type: "scroll", bottom: 0 },
+    label: {
+      show: true,
+      fontSize: 11,
+      formatter: (params) => `${params.value} (${percentOf(params.value)}%)`
+    },
+    labelLine: { length: 12, length2: 10 }
+  };
 }
 
 /** Gráfico 3: Quantidade de Erros por Frente (agrupado por ano + frente, barras horizontais). */
@@ -356,7 +485,8 @@ function updateChartFrente(validRows) {
   // Altura dinâmica do contêiner do canvas, proporcional à quantidade de
   // barras, permitindo rolagem vertical dentro do card (altura fixa).
   const inner = document.getElementById("chart-frente-inner");
-  const height = Math.max(320, grouped.length * 24);
+  // No mobile os nomes podem ocupar 2 linhas: mais altura por barra
+  const height = Math.max(320, grouped.length * (isMobileLayout() ? 36 : 24));
   inner.style.height = `${height}px`;
 
   chartFrente.data.labels = grouped.map((g) => g.label);
