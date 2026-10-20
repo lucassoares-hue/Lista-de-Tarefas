@@ -6,8 +6,7 @@
   <title>Lista de Tarefas - SGGE</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-</head>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script></head>
 <body>
   <!-- Tela de acesso (senha) -->
   <div id="password-screen" class="password-screen">
@@ -82,30 +81,146 @@
   <main class="container">
 
     <!-- Mensagens de status (erro / aviso) -->
-    <div id="status-message" class="status-message" style="display:none;"></div>
-    <div id="loading-indicator" class="loading-indicator" style="display:none;">
+    <div id="status-message" class="status-message" role="status" aria-live="polite" style="display:none;">
+      <span id="status-message-text"></span>
+      <button id="btn-retry" type="button" class="status-retry" style="display:none;">Tentar novamente</button>
+    </div>
+    <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" style="display:none;">
       <span>Carregando dados...</span>
     </div>
 
     <!-- Cards -->
-    <section class="cards-grid">
-      <div class="card card-blue">
-        <div class="card-label">Total de Erros Reportados</div>
-        <div class="card-value" id="card-total-erros">-</div>
+    <section class="cards-grid" aria-label="Indicadores">
+      <button type="button" class="card card-blue card-action" data-situacao="" aria-pressed="true"
+        title="Exibir todas as situações">
+        <span class="card-label">Total de Erros Reportados</span>
+        <span class="card-value" id="card-total-erros">-</span>
+        <span class="card-hint">Todas as situações</span>
+      </button>
+      <!-- O botão RELATÓRIO é irmão do card (não aninhado), para ter ação independente -->
+      <div class="card-wrap">
+        <button type="button" class="card card-red card-action" data-situacao="pendentes" aria-pressed="false"
+          title="Filtrar tarefas pendentes (NO PRAZO ou ATRASADO)">
+          <span class="card-label">Tarefas Pendentes</span>
+          <span class="card-value" id="card-pendentes">-</span>
+          <span class="card-hint">Filtrar pendentes</span>
+        </button>
+        <button type="button" id="btn-relatorio" class="card-report-btn" aria-haspopup="dialog">RELATÓRIO</button>
       </div>
-      <div class="card card-red">
-        <div class="card-label">Tarefas Pendentes</div>
-        <div class="card-value" id="card-pendentes">-</div>
-      </div>
-      <div class="card card-blue">
-        <div class="card-label">Tempo Médio de Resolução</div>
-        <div class="card-value" id="card-tempo-medio">-</div>
-      </div>
-      <div class="card card-green">
-        <div class="card-label">Tarefas Resolvidas</div>
-        <div class="card-value" id="card-resolvidas">-</div>
-      </div>
+      <button type="button" class="card card-blue card-action" id="btn-tempo-detalhe" aria-haspopup="dialog"
+        title="Ver detalhamento do cálculo">
+        <span class="card-label">Tempo Médio de Resolução</span>
+        <span class="card-value" id="card-tempo-medio">-</span>
+        <span class="card-hint">Ver detalhamento</span>
+      </button>
+      <button type="button" class="card card-green card-action" data-situacao="resolvidas" aria-pressed="false"
+        title="Filtrar tarefas resolvidas (RESOLVIDO)">
+        <span class="card-label">Tarefas Resolvidas</span>
+        <span class="card-value" id="card-resolvidas">-</span>
+        <span class="card-hint">Filtrar resolvidas</span>
+      </button>
     </section>
+
+    <!-- Modal: detalhamento do tempo médio de resolução -->
+    <dialog id="tempo-modal" class="modal" aria-labelledby="tempo-modal-title">
+      <div class="modal-header">
+        <h2 id="tempo-modal-title">Detalhamento do tempo de resolução</h2>
+        <button type="button" class="modal-close" data-close-modal aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-summary">
+          <div><span class="modal-summary-label">Média</span><strong id="tempo-modal-media">-</strong></div>
+          <div><span class="modal-summary-label">Registros considerados</span><strong id="tempo-modal-qtd">0</strong></div>
+        </div>
+        <p class="modal-rule">
+          Média simples, em dias corridos, da diferença entre a <strong>data de término</strong> e a
+          <strong>data de início</strong> dos registros exibidos no painel (filtros e situação aplicados)
+          que possuem as duas datas válidas. O campo "Tempo de resolução" da planilha não entra neste
+          cálculo. O resultado é arredondado para o número inteiro de dias mais próximo.
+        </p>
+        <div id="tempo-modal-content"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-btn" data-close-modal>Fechar</button>
+      </div>
+    </dialog>
+
+    <!-- Modal: relatório de tarefas pendentes -->
+    <dialog id="relatorio-modal" class="modal modal-wide report-modal" aria-labelledby="relatorio-modal-title">
+      <header class="report-hero">
+        <div class="report-hero-brand">
+          <span class="report-hero-logo"><img src="assets/gge-logo.png" alt="Logo GGE"></span>
+          <div>
+            <h2 id="relatorio-modal-title">Relatório de Tarefas Pendentes</h2>
+            <p class="report-subtitle">Acompanhamento das atividades ainda em aberto</p>
+          </div>
+        </div>
+        <div class="report-hero-side">
+          <div class="report-hero-meta">
+            <svg class="report-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <div>
+              <p id="relatorio-gerado">Gerado em -</p>
+              <p id="relatorio-qtd" class="report-hero-count">0 pendências neste relatório</p>
+            </div>
+          </div>
+          <div class="report-actions">
+            <button type="button" id="relatorio-pdf" class="report-btn-primary">GERAR PDF</button>
+            <button type="button" class="modal-close report-hero-close" data-close-modal aria-label="Fechar">&times;</button>
+          </div>
+        </div>
+      </header>
+      <div class="modal-body report-body">
+        <p id="relatorio-pdf-erro" class="report-pdf-error" role="alert" hidden></p>
+        <h3 class="visually-hidden">Tarefas pendentes: <span id="relatorio-total">0</span></h3>
+        <section class="report-summary" aria-label="Resumo">
+          <div class="report-kpi">
+            <span class="report-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg></span>
+            <div><strong id="relatorio-sum-total">0</strong><span>Total pendente</span></div>
+          </div>
+          <div class="report-kpi report-kpi-ok">
+            <span class="report-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></span>
+            <div><strong id="relatorio-sum-noprazo">0</strong><span>No prazo</span></div>
+          </div>
+          <div class="report-kpi report-kpi-late">
+            <span class="report-kpi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div><strong id="relatorio-sum-atrasado">0</strong><span>Atrasadas</span></div>
+          </div>
+          <div class="report-analysis">
+            <div id="relatorio-donut" class="report-donut" role="img" aria-label="Percentual atrasado">
+              <span id="relatorio-donut-label">0%</span>
+            </div>
+            <div class="report-analysis-body">
+              <p id="relatorio-percent" class="report-percent">0% das pendências estão atrasadas</p>
+              <div class="report-bar" aria-hidden="true">
+                <span id="relatorio-bar-noprazo" class="report-bar-ok"></span><span id="relatorio-bar-atrasado" class="report-bar-late"></span>
+              </div>
+              <div class="report-bar-legend">
+                <span id="relatorio-legend-noprazo" class="legend-ok">0% no prazo (0)</span>
+                <span id="relatorio-legend-atrasado" class="legend-late">0% atrasadas (0)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="report-filter-strip">
+          <svg class="report-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>
+          <strong>Filtros:</strong>
+          <span id="relatorio-filtros">Todos os registros pendentes</span>
+        </div>
+        <div class="report-filters">
+          <input type="search" id="relatorio-busca" placeholder="Buscar por código, escola, responsável, descrição…" aria-label="Buscar no relatório">
+          <select id="relatorio-f-status" aria-label="Status"></select>
+          <select id="relatorio-f-prioridade" aria-label="Prioridade"></select>
+          <select id="relatorio-f-responsavel" aria-label="Responsável"></select>
+          <select id="relatorio-f-escola" aria-label="Escola"></select>
+          <button type="button" id="relatorio-limpar" class="report-btn-secondary">Limpar filtros</button>
+        </div>
+        <p id="relatorio-count" class="report-count" aria-live="polite"></p>
+        <div id="relatorio-content"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="report-btn-neutral" data-close-modal>Fechar</button>
+      </div>
+    </dialog>
 
     <!-- Gráficos -->
     <section class="charts-grid">
@@ -193,6 +308,10 @@
   <script src="config.js"></script>
   <script src="utils.js"></script>
   <script src="charts.js"></script>
+  <!-- Geração de PDF (cópias locais, sem dependência de CDN) -->
+  <script src="vendor/jspdf-2.5.1/jspdf.umd.min.js"></script>
+  <script src="vendor/jspdf-autotable-3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="report-pdf.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

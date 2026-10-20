@@ -3,7 +3,10 @@
    ========================================================================== */
 
 // URL do endpoint JSON publicado via Google Apps Script
-const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSKByLWfwRQNRjFGrJVaWryETyLlkbadKD1HhCY341ZO5K_dNuLi1wmuy07otZMxIhZRI7LyVEeCht7rmYfKPXxcZoPva3KcYfglgTj8gH4iXtEH_5TYOagMSaqjcX29WXkP54hALK0r_XUNivk4UOAUlYz3iH0JD-SrswPnBFCiv93f4laZR9iXFuWtI43Q3jl5_Gk3WAzIDs07ofC7S2pNBbpyzyCnqx0bgbCTJGutHEXJad5HhFTw4SVGNaz4invKpdjP3RoVoECHm35GB2On7WFLFbVWnedK88qK72mpwdXTh3ZS8o2OpuoSQ&lib=MbbcRJ97s6VM4GMYqj46qug5P-Idvl_o1";
+const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnQs7VgW7e29C4v4d8a-lDFtIP3kAsg7XU_XjrREJrfej03rv5uhm7QTuVEzFfRtWgYHiuKMmkyFb-soou1lWPIM3S5mULhQU33QqDUQcHbIrOfef3abpB1klW1D0AYu4tyyFgneHVNPa3iM4Hx40QxRa6BVE5YxlXzUyI0aKsTcNR11Q7OQuTwr5AJrmEWgIoPE5qG1i2n1gr7eWZybaJFadtz_6kDi8zXbM5fpngV2A6EpMJLcPjqUcF2AWwkpKhEi5bvcZvELAqMiBf36SyLZ5MPjMg&lib=MbbcRJ97s6VM4GMYqj46qug5P-Idvl_o1";
+
+// Tempo máximo de espera pela resposta da API (ms) antes de cancelar a requisição
+const FETCH_TIMEOUT_MS = 20000;
 
 // Status considerados "pendentes" (comparação normalizada: maiúsculas, sem espaços extras)
 const PENDING_STATUSES = ["NO PRAZO", "ATRASADO"];

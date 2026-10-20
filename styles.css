@@ -468,6 +468,35 @@ body {
   font-weight: 500;
 }
 
+.status-message {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-retry {
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.status-retry:hover {
+  background-color: var(--red);
+  color: #ffffff;
+}
+
+.status-retry:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .status-error {
   background-color: var(--red-soft);
   color: var(--red);
@@ -545,6 +574,826 @@ body {
 
 .card-green .card-value {
   color: var(--green);
+}
+
+/* Cards interativos (botões) */
+.card-action {
+  display: block;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-action .card-label,
+.card-action .card-value,
+.card-action .card-hint {
+  display: block;
+}
+
+.card-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card-action:hover {
+  border-color: var(--blue-light);
+}
+
+.card-action:focus-visible {
+  outline: 3px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+.card-action[aria-pressed="true"] {
+  border: 2px solid var(--blue);
+  padding: 17px 19px;
+  background-color: var(--blue-soft);
+}
+
+.card-red.card-action[aria-pressed="true"] {
+  border-color: var(--red);
+  background-color: var(--red-soft);
+}
+
+.card-action[aria-pressed="true"]::after {
+  content: "✓ Selecionado";
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.card-red.card-action[aria-pressed="true"]::after {
+  color: var(--red);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Modal                                                                    */
+/* ---------------------------------------------------------------------- */
+
+.modal {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  color: var(--text);
+}
+
+.modal[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal::backdrop {
+  background: rgba(12, 18, 40, 0.6);
+}
+
+.modal-header,
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+.modal-summary {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.modal-summary strong {
+  display: block;
+  font-size: 22px;
+  color: var(--blue);
+}
+
+.modal-summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-rule {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.modal-btn {
+  height: 34px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--blue);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-close:focus-visible,
+.modal-btn:focus-visible {
+  outline: 3px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+/* Botão RELATÓRIO no card Tarefas Pendentes */
+.card-wrap {
+  position: relative;
+}
+
+.card-wrap .card-action {
+  height: 100%;
+}
+
+/* No card de pendentes, o "✓ Selecionado" vai para baixo, liberando o canto do botão */
+.card-wrap .card-action[aria-pressed="true"]::after {
+  top: auto;
+  bottom: 12px;
+}
+
+.card-report-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 1;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: var(--red);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.card-report-btn:hover {
+  background-color: var(--red);
+  color: #ffffff;
+}
+
+.card-report-btn:focus-visible {
+  outline: 3px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+/* Modal do relatório (padrão executivo: faixa azul, resumo, filtros, tabela) */
+.modal-wide {
+  width: min(1440px, calc(100vw - 32px));
+}
+
+.report-modal {
+  --report-ok: #2e9d6a;
+  --report-ok-soft: #e8f6ef;
+  --report-head-bg: #eef2f8;
+  --report-line: #edf0f4;
+  overflow: hidden;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+}
+
+.report-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Faixa azul do cabeçalho, com formas geométricas sutis */
+.report-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 24px;
+  background-color: var(--blue);
+  color: #ffffff;
+  overflow: hidden;
+}
+
+.report-hero::before,
+.report-hero::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.report-hero::before {
+  right: 18%;
+  top: -40px;
+  width: 220px;
+  height: 160px;
+  transform: skewX(-24deg);
+}
+
+.report-hero::after {
+  right: -40px;
+  bottom: -70px;
+  width: 260px;
+  height: 160px;
+  transform: skewX(-24deg);
+  background-color: rgba(91, 141, 217, 0.22);
+}
+
+.report-hero-brand,
+.report-hero-side {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.report-hero-logo {
+  display: inline-flex;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.report-hero-logo img {
+  height: 30px;
+  width: auto;
+  display: block;
+}
+
+.report-hero h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.report-subtitle {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.report-hero-side {
+  gap: 20px;
+}
+
+.report-hero-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.report-hero-meta p {
+  margin: 0;
+}
+
+.report-hero-count {
+  margin-top: 2px !important;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-btn-primary,
+.report-btn-secondary,
+.report-btn-neutral {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Sobre a faixa azul, o primário é branco com texto azul */
+.report-btn-primary {
+  border: 1px solid #ffffff;
+  background-color: #ffffff;
+  color: var(--blue);
+}
+
+.report-btn-primary:hover {
+  background-color: var(--blue-soft);
+}
+
+.report-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.report-btn-secondary {
+  border: 1px solid var(--border);
+  background-color: #ffffff;
+  color: var(--blue);
+}
+
+.report-btn-secondary:hover {
+  border-color: var(--blue-light);
+}
+
+.report-btn-neutral {
+  border: 1px solid transparent;
+  background-color: #f1f3f6;
+  color: var(--text);
+}
+
+.report-hero-close {
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+.report-hero-close:hover {
+  opacity: 1;
+}
+
+.report-btn-primary:focus-visible,
+.report-btn-secondary:focus-visible,
+.report-btn-neutral:focus-visible,
+.report-hero-close:focus-visible {
+  outline: 3px solid var(--blue-light);
+  outline-offset: 2px;
+}
+
+.report-body {
+  padding: 18px 24px;
+}
+
+.report-pdf-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: var(--red-soft);
+  color: var(--red);
+  font-size: 12.5px;
+}
+
+/* Resumo: 3 cards + bloco de análise (≈ 2 cards) */
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(300px, 2fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.report-kpi,
+.report-analysis {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--report-line);
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.report-kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: var(--blue-soft);
+  color: var(--blue);
+}
+
+.report-kpi-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.report-kpi strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--blue);
+}
+
+.report-kpi span:not(.report-kpi-icon) {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.report-kpi-ok .report-kpi-icon {
+  background-color: var(--report-ok-soft);
+  color: var(--report-ok);
+}
+
+.report-kpi-ok strong {
+  color: var(--report-ok);
+}
+
+.report-kpi-late .report-kpi-icon {
+  background-color: var(--red-soft);
+  color: var(--red);
+}
+
+.report-kpi-late strong {
+  color: var(--red);
+}
+
+.report-donut {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--track-bg);
+}
+
+.report-donut::after {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.report-donut span {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--red);
+}
+
+.report-analysis-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.report-percent {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.report-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--track-bg);
+}
+
+.report-bar-ok {
+  background-color: var(--blue-light);
+}
+
+.report-bar-late {
+  background-color: var(--red);
+}
+
+.report-bar-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.legend-ok {
+  color: var(--blue);
+}
+
+.legend-late {
+  color: var(--red);
+}
+
+/* Faixa de filtros gerais */
+.report-filter-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 9px 14px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background-color: #f6f8fb;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.report-filter-strip .report-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--blue);
+}
+
+.report-filter-strip strong {
+  color: var(--text);
+}
+
+/* Controles internos (busca e filtros do relatório) */
+.report-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.report-filters input,
+.report-filters select {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text);
+  background-color: #ffffff;
+}
+
+.report-filters input {
+  flex: 1 1 260px;
+}
+
+.report-filters select {
+  flex: 0 1 170px;
+  min-width: 140px;
+}
+
+.report-filters input:focus-visible,
+.report-filters select:focus-visible {
+  outline: 3px solid var(--blue-light);
+  outline-offset: 1px;
+}
+
+.report-count {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Tabela */
+.report-table-wrapper {
+  max-height: 56vh;
+  border-color: var(--report-line);
+}
+
+.report-table thead th {
+  background-color: var(--report-head-bg);
+  color: #4b5568;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.report-table tbody td {
+  vertical-align: middle;
+  padding: 11px 12px;
+  border-bottom-color: var(--report-line);
+}
+
+.report-table tbody tr:nth-child(even) {
+  background-color: transparent;
+}
+
+.report-table tbody tr:hover {
+  background-color: #f8fafd;
+}
+
+.report-table .col-sm {
+  white-space: nowrap;
+}
+
+.report-table .col-md {
+  min-width: 150px;
+}
+
+.report-table .col-lg {
+  min-width: 200px;
+}
+
+.report-table .col-desc {
+  width: 34%;
+  min-width: 320px;
+  white-space: normal;
+}
+
+.report-cell-stack span {
+  display: block;
+}
+
+.report-cell-stack span + span {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.report-row-atrasado td:first-child {
+  box-shadow: inset 3px 0 0 var(--red);
+}
+
+.report-school {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.report-school-logo {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: contain;
+  background-color: #ffffff;
+  border: 1px solid var(--report-line);
+}
+
+.report-school-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--blue);
+  border-color: var(--blue);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+/* Badges de prioridade (ponto + texto) e de status (ícone + texto) */
+.report-priority,
+.report-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.report-priority {
+  background-color: #f3f5f8;
+  color: var(--text);
+}
+
+.report-priority::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.report-priority.priority-urgente::before { background-color: var(--red); }
+.report-priority.priority-alta::before { background-color: var(--orange); }
+.report-priority.priority-media::before { background-color: var(--blue-light); }
+.report-priority.priority-baixa::before { background-color: #a6a6a6; }
+
+.report-status svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.report-status-late {
+  background-color: var(--red-soft);
+  color: var(--red);
+}
+
+.report-status-ok {
+  background-color: var(--blue-soft);
+  color: var(--blue);
+}
+
+@media (max-width: 1100px) {
+  .report-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .report-analysis {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .report-hero,
+  .report-hero-side {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .report-hero {
+    padding: 16px;
+  }
+
+  .report-hero-side {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .report-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .report-body {
+    padding: 14px 16px;
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .report-kpi:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .report-filters select {
+    flex: 1 1 45%;
+  }
+}
+
+.modal-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1005,11 +1854,17 @@ tbody tr:hover {
   padding: 24px;
 }
 
-.cell-truncate {
+/* Descrição do Problema: texto completo, quebrando em várias linhas */
+.cell-descricao {
+  width: 320px;
+  min-width: 320px;
   max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.45;
 }
 
 .table-school-cell {

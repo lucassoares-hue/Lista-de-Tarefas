@@ -64,6 +64,19 @@ function getOrigemColor(label, index) {
 
 /** Cria os gráficos Chart.js vazios. Deve ser chamado uma única vez. */
 function initCharts() {
+  const elModulo = document.getElementById("chart-modulo");
+  if (elModulo && window.echarts) {
+    chartModulo = echarts.init(elModulo);
+    window.addEventListener("resize", () => chartModulo.resize());
+  }
+
+  // Sem Chart.js (ex.: falha no CDN), os gráficos de barras ficam vazios,
+  // mas o restante do painel (cards, rankings e tabela) continua funcionando.
+  if (!window.Chart) {
+    console.error("Chart.js não foi carregado; gráficos de barras desativados.");
+    return;
+  }
+
   const ctxOrigem = document.getElementById("chart-origem").getContext("2d");
   const ctxFrente = document.getElementById("chart-frente").getContext("2d");
   const ctxColecao = document.getElementById("chart-colecao").getContext("2d");
@@ -197,12 +210,6 @@ function initCharts() {
     },
     plugins: [barValueLabelPlugin]
   });
-
-  const elModulo = document.getElementById("chart-modulo");
-  if (elModulo && window.echarts) {
-    chartModulo = echarts.init(elModulo);
-    window.addEventListener("resize", () => chartModulo.resize());
-  }
 }
 
 /**
@@ -226,16 +233,18 @@ function updateChartColecao(validRows) {
   );
   grouped.sort((a, b) => b.value - a.value);
 
+  const totalEl = document.getElementById("colecao-total-erros");
+  if (totalEl) totalEl.textContent = validRows.length;
+
+  if (!chartColecao) return;
   chartColecao.data.labels = grouped.map((g) => g.label);
   chartColecao.data.datasets[0].data = grouped.map((g) => g.value);
   chartColecao.update();
-
-  const totalEl = document.getElementById("colecao-total-erros");
-  if (totalEl) totalEl.textContent = validRows.length;
 }
 
 /** Gráfico 1: Origem dos Erros (agrupado por origem_erro, barras horizontais). */
 function updateChartOrigem(validRows) {
+  if (!chartOrigem) return;
   const grouped = countByGroup(validRows, (row) =>
     isFilled(row.origem_erro) ? row.origem_erro : "Não informado"
   );
@@ -336,6 +345,7 @@ function updateChartModulo(validRows) {
 
 /** Gráfico 3: Quantidade de Erros por Frente (agrupado por ano + frente, barras horizontais). */
 function updateChartFrente(validRows) {
+  if (!chartFrente) return;
   const grouped = countByGroup(validRows, (row) => {
     const ano = isFilled(row.ano) ? row.ano : "S/ ano";
     const frente = isFilled(row.frente) ? row.frente : "S/ frente";
